@@ -35,10 +35,13 @@ def _check_range(value: int, field_name: str) -> int:
 
 
 def read_int(field_name: str) -> int:
-    raw = input(f"Введіть {field_name}: ")
-    value = _parse_int(raw, field_name)
-    return _check_range(value, field_name)
-
+    while True:
+        raw = input(f"Введіть {field_name}: ")
+        try:
+            value = _parse_int(raw, field_name)
+            return _check_range(value, field_name)
+        except (FormatError, RangeError) as e:
+            print(f"\n=== Помилка введення ===\n{e}\nСпробуйте ще раз.\n")
 
 @dataclass(frozen=True)
 class TwoPointsInput:
@@ -89,24 +92,46 @@ def read_variant_inputs() -> Tuple[TwoPointsInput, InterceptsInput, SlopeInterce
     (4) у відрізках
     (5) з кутовим коефіцієнтом (k,b), b != 0
     """
-    print("\n=== Пряма №1: через 2 точки (x1,y1), (x2,y2) ===")
-    x1 = read_int("x1")
-    y1 = read_int("y1")
-    x2 = read_int("x2")
-    y2 = read_int("y2")
-    p = TwoPointsInput(x1, y1, x2, y2)
-    p.validate()
 
-    print("\n=== Пряма №2: у відрізках (a, b) ===")
-    a = read_int("a")
-    b = read_int("b")
-    inter = InterceptsInput(a, b)
-    inter.validate()
+    # ---- Пряма №1: через 2 точки ----
+    while True:
+        print("\n=== Пряма №1: через 2 точки (x1,y1), (x2,y2) ===")
+        x1 = read_int("x1")
+        y1 = read_int("y1")
+        x2 = read_int("x2")
+        y2 = read_int("y2")
 
-    print("\n=== Пряма №3: з кутовим коефіцієнтом (k, b), b≠0 ===")
-    k = read_int("k")
-    b2 = read_int("b")
-    si = SlopeInterceptInput(k, b2)
-    si.validate()
+        p = TwoPointsInput(x1, y1, x2, y2)
+        try:
+            p.validate()
+            break
+        except GeometryError as e:
+            print(f"\n=== Помилка введення ===\n{e}\nВведіть дані для Прямої №1 ще раз.\n")
+
+    # ---- Пряма №2: у відрізках ----
+    while True:
+        print("\n=== Пряма №2: у відрізках (a, b) ===")
+        a = read_int("a")
+        b = read_int("b")
+
+        inter = InterceptsInput(a, b)
+        try:
+            inter.validate()
+            break
+        except GeometryError as e:
+            print(f"\n=== Помилка введення ===\n{e}\nВведіть дані для Прямої №2 ще раз.\n")
+
+    # ---- Пряма №3: k, b ----
+    while True:
+        print("\n=== Пряма №3: з кутовим коефіцієнтом (k, b), b≠0 ===")
+        k = read_int("k")
+        b2 = read_int("b")
+
+        si = SlopeInterceptInput(k, b2)
+        try:
+            si.validate()
+            break
+        except GeometryError as e:
+            print(f"\n=== Помилка введення ===\n{e}\nВведіть дані для Прямої №3 ще раз.\n")
 
     return p, inter, si
